@@ -15,7 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         // Menü çubuğu ikonu — nötr, tek renk (alarm çağrışımı yok)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            let image = NSImage(systemSymbolName: "rectangle.stack",
+            let image = NSImage(systemSymbolName: "bolt.fill",
                                 accessibilityDescription: "Quix")
             image?.isTemplate = true
             button.image = image

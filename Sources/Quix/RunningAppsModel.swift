@@ -94,6 +94,10 @@ final class RunningAppsModel {
     /// Kullanıcının Quix'i açmadan hemen önce kullandığı uygulama — öneri dışı bırakılır.
     private(set) var lastActiveOtherPID: pid_t?
 
+    // Histerezis: bir kez eşiği aşan uygulama, kısa süre "ağır" kalır (flicker önler)
+    @ObservationIgnored private var heavyUntil: [pid_t: Date] = [:]
+    private let heavyGrace: TimeInterval = 15
+
     private var statsTimer: Timer?
     private let ownPID = ProcessInfo.processInfo.processIdentifier
     private var flagsMonitor: Any?
@@ -137,9 +141,26 @@ final class RunningAppsModel {
 
     // MARK: - Hızlandırma önerileri
 
-    /// Eşiği aşan (kapatınca sistemi rahatlatabilecek) aday mı?
-    func isHeavy(_ app: AppInfo) -> Bool {
+    /// Şu an eşiği aşıyor mu?
+    private func isOverThreshold(_ app: AppInfo) -> Bool {
         Double(app.rssKB) >= suggestMemoryMB * 1024 || app.cpu >= suggestCPU
+    }
+
+    /// Eşiği aşan veya kısa süre önce aşmış (histerezisli) aday mı?
+    func isHeavy(_ app: AppInfo) -> Bool {
+        if isOverThreshold(app) { return true }
+        if let until = heavyUntil[app.id], until > Date() { return true }
+        return false
+    }
+
+    /// "Ağır" durumları güncelle — eşiği aşanların süresini uzat, ölenleri temizle.
+    private func updateHeavyTracking() {
+        let now = Date()
+        for app in apps where isOverThreshold(app) {
+            heavyUntil[app.id] = now.addingTimeInterval(heavyGrace)
+        }
+        let live = Set(apps.map { $0.id })
+        heavyUntil = heavyUntil.filter { live.contains($0.key) }
     }
 
     /// Çok kaynak tüketen ve az önce kullanılmayan uygulamalar (RAM'e göre azalan).
@@ -150,6 +171,19 @@ final class RunningAppsModel {
 
     func isSuggested(_ app: AppInfo) -> Bool {
         isHeavy(app) && app.id != lastActiveOtherPID
+    }
+
+    func isActive(_ app: AppInfo) -> Bool {
+        app.id == lastActiveOtherPID
+    }
+
+    /// Görünen listedeki toplam RAM.
+    var totalMemoryText: String {
+        let bytes = Double(filteredApps.reduce(0) { $0 + $1.rssKB }) * 1024.0
+        let f = ByteCountFormatter()
+        f.allowedUnits = [.useMB, .useGB]
+        f.countStyle = .memory
+        return f.string(fromByteCount: Int64(bytes))
     }
 
     /// Önerilenleri kapatınca boşalacak tahmini RAM.
@@ -196,6 +230,7 @@ final class RunningAppsModel {
         }
 
         apps = updated
+        updateHeavyTracking()
     }
 
     private func updateStats() {
@@ -208,6 +243,7 @@ final class RunningAppsModel {
             }
         }
         apps = next
+        updateHeavyTracking()
     }
 
     // MARK: - Timer
@@ -240,6 +276,27 @@ final class RunningAppsModel {
     func forceQuit(_ app: AppInfo) {
         app.runningApp.forceTerminate()
         removeOptimistically([app.id])
+    }
+
+    // MARK: - Satır aksiyonları (sağ tık)
+
+    func revealInFinder(_ app: AppInfo) {
+        if let url = app.runningApp.bundleURL {
+            NSWorkspace.shared.activateFileViewerSelecting([url])
+        }
+    }
+
+    func toggleHide(_ app: AppInfo) {
+        if app.runningApp.isHidden {
+            app.runningApp.unhide()
+        } else {
+            app.runningApp.hide()
+        }
+    }
+
+    func requestQuitOthers(_ app: AppInfo) {
+        let others = filteredApps.filter { $0.id != app.id }
+        requestQuit(others, title: "Diğerlerini Kapat")
     }
 
     // MARK: - Toplu kapatma onayı (popover içi)

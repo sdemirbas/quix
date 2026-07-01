@@ -6,6 +6,13 @@ struct RootView: View {
     let onOpenSettings: () -> Void
     let onCheckForUpdates: () -> Void
 
+    @State private var selectedID: pid_t?
+    @FocusState private var searchFocused: Bool
+
+    private var selectedApp: AppInfo? {
+        model.filteredApps.first { $0.id == selectedID }
+    }
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -33,14 +40,49 @@ struct RootView: View {
         }
         .frame(width: 360, height: 460)
         .animation(.easeOut(duration: 0.15), value: model.pendingQuit?.id)
+        .onAppear { DispatchQueue.main.async { searchFocused = true } }
+        .onKeyPress(action: handleKey)
+    }
+
+    // MARK: - Klavye
+
+    private func handleKey(_ press: KeyPress) -> KeyPress.Result {
+        if model.pendingQuit != nil { return .ignored }
+        switch press.key {
+        case .downArrow: moveSelection(1); return .handled
+        case .upArrow:   moveSelection(-1); return .handled
+        case .escape:
+            if !model.searchText.isEmpty { model.searchText = ""; return .handled }
+            if selectedID != nil { selectedID = nil; return .handled }
+            return .ignored
+        default:
+            if press.modifiers.contains(.command) {
+                if press.characters == "w", let app = selectedApp {
+                    model.quit(app); return .handled
+                }
+                if press.characters == "f" { searchFocused = true; return .handled }
+            }
+            return .ignored
+        }
+    }
+
+    private func moveSelection(_ delta: Int) {
+        let list = model.filteredApps
+        guard !list.isEmpty else { return }
+        if let id = selectedID, let idx = list.firstIndex(where: { $0.id == id }) {
+            let next = min(max(idx + delta, 0), list.count - 1)
+            selectedID = list[next].id
+        } else {
+            selectedID = delta > 0 ? list.first?.id : list.last?.id
+        }
     }
 
     // MARK: - Header
 
     private var header: some View {
         HStack(spacing: 6) {
-            Image(systemName: "rectangle.stack")
-                .foregroundStyle(.secondary)
+            Image(systemName: "bolt.fill")
+                .foregroundStyle(Color.accentColor)
             Text("Quix")
                 .font(.headline)
             if model.optionHeld {
@@ -65,6 +107,7 @@ struct RootView: View {
             .menuStyle(.borderlessButton)
             .fixedSize()
             .help("Sırala: \(model.sortOrder.label)")
+            .accessibilityLabel("Sıralama ölçütü")
 
             Button {
                 model.refresh()
@@ -73,6 +116,7 @@ struct RootView: View {
             }
             .buttonStyle(.borderless)
             .help("Yenile")
+            .accessibilityLabel("Listeyi yenile")
         }
         .padding(.horizontal, 14)
         .padding(.top, 12)
@@ -87,6 +131,7 @@ struct RootView: View {
                 .foregroundStyle(.secondary)
             TextField("Uygulama ara…", text: $model.searchText)
                 .textFieldStyle(.plain)
+                .focused($searchFocused)
             if !model.searchText.isEmpty {
                 Button {
                     model.searchText = ""
@@ -156,37 +201,41 @@ struct RootView: View {
     // MARK: - List
 
     private var appList: some View {
-        ScrollView {
-            LazyVStack(spacing: 2) {
-                if model.filteredApps.isEmpty {
-                    ContentUnavailableView(
-                        model.searchText.isEmpty ? "Çalışan uygulama yok" : "Sonuç bulunamadı",
-                        systemImage: model.searchText.isEmpty ? "checkmark.circle" : "magnifyingglass"
-                    )
-                    .padding(.vertical, 24)
-                } else {
-                    ForEach(model.filteredApps) { app in
-                        AppRowView(app: app,
-                                   optionHeld: model.optionHeld,
-                                   isSuggested: model.isSuggested(app)) {
-                            model.quit(app)
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 2) {
+                    if model.filteredApps.isEmpty {
+                        ContentUnavailableView(
+                            model.searchText.isEmpty ? "Çalışan uygulama yok" : "Sonuç bulunamadı",
+                            systemImage: model.searchText.isEmpty ? "checkmark.circle" : "magnifyingglass"
+                        )
+                        .padding(.vertical, 24)
+                    } else {
+                        ForEach(model.filteredApps) { app in
+                            AppRowView(model: model, app: app, selected: app.id == selectedID)
+                                .id(app.id)
                         }
                     }
                 }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .animation(.easeInOut(duration: 0.25), value: model.filteredApps.map(\.id))
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            .frame(maxHeight: .infinity)
+            .onChange(of: selectedID) { _, id in
+                if let id { withAnimation { proxy.scrollTo(id, anchor: .center) } }
+            }
         }
-        .frame(maxHeight: .infinity)
     }
 
     // MARK: - Footer
 
     private var footer: some View {
         HStack(spacing: 8) {
-            Text("\(model.filteredApps.count) uygulama")
+            Text("\(model.filteredApps.count) uygulama · \(model.totalMemoryText)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .monospacedDigit()
             Spacer()
             Button {
                 model.requestQuitAll()
