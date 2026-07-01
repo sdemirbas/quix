@@ -1,4 +1,4 @@
-# QuitAll — Yayınlama & Otomatik Güncelleme
+# Quix — Yayınlama & Otomatik Güncelleme
 
 Dağıtım: **doğrudan indirme** (Developer ID + notarization) + **Sparkle** ile otomatik güncelleme.
 Mac App Store kullanılamaz (sandbox başka uygulamaları kapatmayı ve `/bin/ps`'i yasaklar).
@@ -17,23 +17,22 @@ security find-identity -v -p codesigning | grep "Developer ID Application"
 ### 2. Notarization kimlik profili
 appleid.apple.com → **App-Specific Passwords** → yeni parola oluştur. Sonra:
 ```bash
-xcrun notarytool store-credentials "quitall-notary" \
+xcrun notarytool store-credentials "quix-notary" \
   --apple-id "SENIN_APPLE_ID@ornek.com" \
   --team-id "BVCDHS9VW4" \
   --password "xxxx-xxxx-xxxx-xxxx"   # az önceki app-specific password
 ```
 
 ### 3. GitHub deposu
+Repo **public** olmalı (Sparkle appcast'ı raw URL'den okur):
 ```bash
-git init && git add -A && git commit -m "init: QuitAll"
-gh repo create xsdemirbas/quitall --public --source=. --push
+gh repo create sdemirbas/quix --public --source=. --push
 ```
-Depo adı farklıysa `release.config` içindeki `GITHUB_REPO` ve `SUFEED_URL`'i güncelle.
 
 ### 4. Sparkle özel anahtarını yedekle (KRİTİK)
 Bu anahtar kaybolursa bir daha güncelleme imzalayamazsın:
 ```bash
-.build/artifacts/sparkle/Sparkle/bin/generate_keys -x quitall_sparkle_private_key.txt
+.build/artifacts/sparkle/Sparkle/bin/generate_keys -x quix_sparkle_private_key.txt
 # Dosyayı GÜVENLİ bir yere sakla, repoya KOYMA.
 ```
 Açık anahtar zaten `release.config` içinde: `SU_PUBLIC_ED_KEY`.

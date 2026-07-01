@@ -16,7 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
             let image = NSImage(systemSymbolName: "rectangle.stack",
-                                accessibilityDescription: "QuitAll")
+                                accessibilityDescription: "Quix")
             image?.isTemplate = true
             button.image = image
             button.action = #selector(togglePopover(_:))

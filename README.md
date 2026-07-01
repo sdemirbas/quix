@@ -1,16 +1,17 @@
-# QuitAll
+# Quix
 
 Menü çubuğunda çalışan bir macOS aracı. Açık uygulamaları ikon, RAM ve CPU kullanımıyla
-listeler; tek tek veya toptan kapatmanı sağlar.
+listeler; tek tek veya toptan **hızlıca kapatmanı** sağlar. (Quix = quick + quit)
 
 ## Özellikler
 
-- 🖥️ Çalışan (Dock'ta görünen) uygulamaları listeler — Finder ve arka plan servisleri gizli
-- ❌ Tek tıkla uygulama kapat
+- 🖥️ Çalışan uygulamaları listeler — normal uygulamalar + menü çubuğu ajanları
+- ❌ Tek tıkla uygulama kapat (üstüne gelince çıkar)
 - ⚡ **Option** tuşuyla **zorla kapat** (force quit)
-- 🧹 **Hepsini Kapat** butonu (Option ile hepsini zorla kapat)
-- 🔍 İsimle arama / filtreleme
-- 📊 Her uygulama için RAM ve CPU kullanımı (popover açıkken canlı güncellenir)
+- 🧹 **Hepsini Kapat** — onaylı, kaydedilmemiş veriyi koruyan
+- 🗂️ Kategori filtresi (Tümü / Uygulamalar / Menü Çubuğu) + isimle arama
+- 📊 Hover'da RAM; yüksek CPU kullananlar turuncu nokta ile işaretli
+- 🔄 Sparkle ile **otomatik güncelleme**
 - 🚫 Dock ikonu yok (menü çubuğu uygulaması)
 
 ## Gereksinimler
@@ -21,29 +22,24 @@ listeler; tek tek veya toptan kapatmanı sağlar.
 ## Çalıştırma
 
 ```bash
-# Hızlı geliştirme (menü çubuğunda çalışır, terminale bağlı)
-make debug
-
-# .app oluştur ve aç
-make run
+make debug   # en hızlı iterasyon (swift run)
+make run     # .app oluştur ve aç
 ```
 
-`make run` → `QuitAll.app` üretir ve açar. İkon menü çubuğunda (sağ üst) belirir.
+İkon menü çubuğunda (sağ üst) `rectangle.stack` sembolüyle belirir.
 
 ## Kullanım
 
-1. Menü çubuğundaki ❌ ikonuna tıkla.
-2. Açık uygulamalar listelenir. Bir uygulamanın yanındaki **✕** butonuna bas → kapanır.
-3. **Option** tuşunu basılı tut → butonlar kırmızı ⚡ olur, tıklayınca **zorla** kapatır.
-4. Alttaki **Hepsini Kapat** → QuitAll hariç tüm uygulamaları kapatır.
-5. Üstteki arama kutusuyla filtreleyebilirsin.
+1. Menü çubuğundaki ikona tıkla.
+2. Bir uygulamanın üstüne gel → **✕** ile kapat.
+3. **Option** basılı tut → butonlar kırmızı ⚡ olur, tıklayınca **zorla** kapatır.
+4. Kategori sekmeleri ve arama ile filtrele.
+5. Alttaki **Hepsini Kapat** → onaydan sonra görünen uygulamaları kapatır.
 
-## Notlar
+## Yayınlama
 
-- İlk açılışta macOS "geliştirici doğrulanamadı" uyarısı verirse: `QuitAll.app`'e
-  **sağ tık → Aç** yap, bir kez onayla.
-- CPU% değeri `ps` çıktısıdır (süreç ömrü boyunca ortalama), anlık değil.
-- Kaydedilmemiş değişiklik içeren uygulamalar normal kapatmada onay diyaloğu gösterebilir.
+Dağıtım ve otomatik güncelleme için bkz. **[RELEASING.md](RELEASING.md)**.
+Kısaca: `release.config`'de sürümü yükselt → `make release`.
 
 ## Mimari
 
@@ -51,5 +47,5 @@ make run
 - `AppDelegate.swift` — menü çubuğu `NSStatusItem` + `NSPopover`
 - `RunningAppsModel.swift` — `NSWorkspace` ile uygulama listesi, quit/force/quitAll
 - `ProcessStats.swift` — tek `ps` çağrısıyla RAM/CPU (imzalama/entitlement gerektirmez)
-- `Views/` — SwiftUI arayüz (liste, arama, satırlar)
-```
+- `UpdaterController.swift` — Sparkle otomatik güncelleme
+- `Views/` — SwiftUI arayüz (liste, arama, ayarlar, onboarding)

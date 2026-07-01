@@ -26,7 +26,7 @@ struct RootView: View {
         HStack(spacing: 6) {
             Image(systemName: "rectangle.stack")
                 .foregroundStyle(.secondary)
-            Text("QuitAll")
+            Text("Quix")
                 .font(.headline)
             if model.optionHeld {
                 Text("FORCE")
@@ -139,7 +139,7 @@ struct RootView: View {
                 Button("Güncellemeleri Denetle…", action: onCheckForUpdates)
                 Button("Ayarlar…", action: onOpenSettings)
                 Divider()
-                Button("QuitAll'ı Kapat", role: .destructive, action: onQuitSelf)
+                Button("Quix'ten Çık", role: .destructive, action: onQuitSelf)
             } label: {
                 Image(systemName: "ellipsis.circle")
             }

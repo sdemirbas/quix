@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "QuitAll",
+    name: "Quix",
     platforms: [
         .macOS(.v14)
     ],
@@ -11,11 +11,11 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "QuitAll",
+            name: "Quix",
             dependencies: [
                 .product(name: "Sparkle", package: "Sparkle")
             ],
-            path: "Sources/QuitAll"
+            path: "Sources/Quix"
         )
     ]
 )

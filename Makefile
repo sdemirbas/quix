@@ -14,7 +14,7 @@ bundle:
 
 # Bundle oluştur ve aç
 run: bundle
-	open QuitAll.app
+	open Quix.app
 
 # İmzalı, notarize, GitHub'a yayınla + otomatik güncelleme (release.config'i güncelle)
 release:
@@ -22,4 +22,4 @@ release:
 
 clean:
 	swift package clean
-	rm -rf QuitAll.app .build dist
+	rm -rf Quix.app .build dist

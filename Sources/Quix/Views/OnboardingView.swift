@@ -25,7 +25,7 @@ struct OnboardingView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "rectangle.stack")
                         .foregroundStyle(.tint)
-                    Text("QuitAll hazır")
+                    Text("Quix hazır")
                         .font(.headline)
                 }
                 Text("Çalışan uygulamaları görüp kapatmak için\nyukarıdaki menü çubuğu ikonuna tıkla.")
