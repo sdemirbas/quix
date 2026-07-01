@@ -4,6 +4,7 @@ struct RootView: View {
     @Bindable var model: RunningAppsModel
     let onQuitSelf: () -> Void
     let onRequestQuitAll: (_ force: Bool, _ count: Int) -> Void
+    let onRequestQuitSuggested: (_ force: Bool, _ count: Int) -> Void
     let onOpenSettings: () -> Void
     let onCheckForUpdates: () -> Void
 
@@ -12,6 +13,9 @@ struct RootView: View {
             header
             searchBar
             categoryPicker
+            if !model.suggestions.isEmpty {
+                suggestionsBanner
+            }
             Divider().opacity(0.5)
             appList
             Divider().opacity(0.5)
@@ -37,6 +41,20 @@ struct RootView: View {
                     .clipShape(Capsule())
             }
             Spacer()
+            Menu {
+                Picker("Sırala", selection: $model.sortOrder) {
+                    ForEach(SortOrder.allCases) { order in
+                        Text(order.label).tag(order)
+                    }
+                }
+                .pickerStyle(.inline)
+            } label: {
+                Image(systemName: "arrow.up.arrow.down")
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Sırala: \(model.sortOrder.label)")
+
             Button {
                 model.refresh()
             } label: {
@@ -92,6 +110,38 @@ struct RootView: View {
         .padding(.bottom, 10)
     }
 
+    // MARK: - Hızlandırma önerisi
+
+    private var suggestionsBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "bolt.fill")
+                .foregroundStyle(.orange)
+                .font(.system(size: 16, weight: .bold))
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(model.suggestions.count) uygulama sistemi yoruyor")
+                    .font(.subheadline).fontWeight(.semibold)
+                Text("~\(model.reclaimableText) RAM boşaltabilirsin")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                onRequestQuitSuggested(model.optionHeld, model.suggestions.count)
+            } label: {
+                Text(model.optionHeld ? "Zorla" : "Kapat")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .tint(.orange)
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.orange.opacity(0.12))
+        )
+        .padding(.horizontal, 14)
+        .padding(.bottom, 10)
+    }
+
     // MARK: - List
 
     private var appList: some View {
@@ -105,7 +155,9 @@ struct RootView: View {
                     .padding(.vertical, 24)
                 } else {
                     ForEach(model.filteredApps) { app in
-                        AppRowView(app: app, optionHeld: model.optionHeld) {
+                        AppRowView(app: app,
+                                   optionHeld: model.optionHeld,
+                                   isSuggested: model.isSuggested(app)) {
                             model.quit(app)
                         }
                     }

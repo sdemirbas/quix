@@ -3,6 +3,7 @@ import SwiftUI
 struct AppRowView: View {
     let app: AppInfo
     let optionHeld: Bool
+    let isSuggested: Bool
     let onQuit: () -> Void
 
     @State private var hovering = false
@@ -47,6 +48,17 @@ struct AppRowView: View {
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
                 quitButton
+            }
+        } else if isSuggested {
+            // Hızlandırma önerisi: çok kaynak tüketiyor
+            HStack(spacing: 4) {
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(.orange)
+                Text(app.memoryText)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
             }
         } else if app.isHighUsage {
             // "Önemli enerji kullanıyor" göstergesi
