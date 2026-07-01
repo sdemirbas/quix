@@ -95,7 +95,7 @@ struct RootView: View {
             }
             Spacer()
             Menu {
-                Picker("Sırala", selection: $model.sortOrder) {
+                Picker(L.s("Sırala", "Sort"), selection: $model.sortOrder) {
                     ForEach(SortOrder.allCases) { order in
                         Text(order.label).tag(order)
                     }
@@ -106,8 +106,8 @@ struct RootView: View {
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
-            .help("Sırala: \(model.sortOrder.label)")
-            .accessibilityLabel("Sıralama ölçütü")
+            .help(L.s("Sırala: ", "Sort: ") + model.sortOrder.label)
+            .accessibilityLabel(L.s("Sıralama ölçütü", "Sort order"))
 
             Button {
                 model.refresh()
@@ -115,8 +115,8 @@ struct RootView: View {
                 Image(systemName: "arrow.clockwise")
             }
             .buttonStyle(.borderless)
-            .help("Yenile")
-            .accessibilityLabel("Listeyi yenile")
+            .help(L.s("Yenile", "Refresh"))
+            .accessibilityLabel(L.s("Listeyi yenile", "Refresh list"))
         }
         .padding(.horizontal, 14)
         .padding(.top, 12)
@@ -129,7 +129,7 @@ struct RootView: View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            TextField("Uygulama ara…", text: $model.searchText)
+            TextField(L.s("Uygulama ara…", "Search apps…"), text: $model.searchText)
                 .textFieldStyle(.plain)
                 .focused($searchFocused)
             if !model.searchText.isEmpty {
@@ -155,7 +155,7 @@ struct RootView: View {
     // MARK: - Category
 
     private var categoryPicker: some View {
-        Picker("Kategori", selection: $model.category) {
+        Picker(L.s("Kategori", "Category"), selection: $model.category) {
             ForEach(AppCategory.allCases) { cat in
                 Text("\(cat.label) (\(model.count(for: cat)))").tag(cat)
             }
@@ -174,16 +174,19 @@ struct RootView: View {
                 .foregroundStyle(.orange)
                 .font(.system(size: 16, weight: .bold))
             VStack(alignment: .leading, spacing: 1) {
-                Text("\(model.suggestions.count) uygulama sistemi yoruyor")
+                Text(L.isTurkish
+                     ? "\(model.suggestions.count) uygulama sistemi yoruyor"
+                     : "\(model.suggestions.count) app\(model.suggestions.count == 1 ? "" : "s") straining your system")
                     .font(.subheadline).fontWeight(.semibold)
-                Text("~\(model.reclaimableText) RAM boşaltabilirsin")
+                Text(L.s("~\(model.reclaimableText) RAM boşaltabilirsin",
+                         "Free up ~\(model.reclaimableText) RAM"))
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             Button {
                 model.requestQuitSuggested()
             } label: {
-                Text(model.optionHeld ? "Zorla" : "Kapat")
+                Text(model.optionHeld ? L.s("Zorla", "Force") : L.s("Kapat", "Quit"))
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.small)
@@ -206,7 +209,9 @@ struct RootView: View {
                 LazyVStack(spacing: 2) {
                     if model.filteredApps.isEmpty {
                         ContentUnavailableView(
-                            model.searchText.isEmpty ? "Çalışan uygulama yok" : "Sonuç bulunamadı",
+                            model.searchText.isEmpty
+                                ? L.s("Çalışan uygulama yok", "No running apps")
+                                : L.s("Sonuç bulunamadı", "No results"),
                             systemImage: model.searchText.isEmpty ? "checkmark.circle" : "magnifyingglass"
                         )
                         .padding(.vertical, 24)
@@ -232,7 +237,9 @@ struct RootView: View {
 
     private var footer: some View {
         HStack(spacing: 8) {
-            Text("\(model.filteredApps.count) uygulama · \(model.totalMemoryText)")
+            Text(L.isTurkish
+                 ? "\(model.filteredApps.count) uygulama · \(model.totalMemoryText)"
+                 : "\(model.filteredApps.count) app\(model.filteredApps.count == 1 ? "" : "s") · \(model.totalMemoryText)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -240,7 +247,8 @@ struct RootView: View {
             Button {
                 model.requestQuitAll()
             } label: {
-                Text(model.optionHeld ? "Hepsini Zorla Kapat" : "Hepsini Kapat")
+                Text(model.optionHeld ? L.s("Hepsini Zorla Kapat", "Force Quit All")
+                                      : L.s("Hepsini Kapat", "Quit All"))
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
@@ -248,10 +256,10 @@ struct RootView: View {
             .disabled(model.filteredApps.isEmpty)
 
             Menu {
-                Button("Güncellemeleri Denetle…", action: onCheckForUpdates)
-                Button("Ayarlar…", action: onOpenSettings)
+                Button(L.s("Güncellemeleri Denetle…", "Check for Updates…"), action: onCheckForUpdates)
+                Button(L.s("Ayarlar…", "Settings…"), action: onOpenSettings)
                 Divider()
-                Button("Quix'ten Çık", role: .destructive, action: onQuitSelf)
+                Button(L.s("Quix'ten Çık", "Quit Quix"), role: .destructive, action: onQuitSelf)
             } label: {
                 Image(systemName: "ellipsis.circle")
             }

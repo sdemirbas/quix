@@ -11,9 +11,9 @@ enum AppCategory: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .all: return "Tümü"
-        case .apps: return "Uygulamalar"
-        case .menuBar: return "Menü Çubuğu"
+        case .all: return L.s("Tümü", "All")
+        case .apps: return L.s("Uygulamalar", "Apps")
+        case .menuBar: return L.s("Menü Çubuğu", "Menu Bar")
         }
     }
 }
@@ -35,7 +35,7 @@ enum SortOrder: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .name: return "İsim"
+        case .name: return L.s("İsim", "Name")
         case .memory: return "RAM"
         case .cpu: return "CPU"
         }
@@ -220,7 +220,7 @@ final class RunningAppsModel {
             return AppInfo(
                 id: pid,
                 bundleId: app.bundleIdentifier,
-                name: app.localizedName ?? app.bundleIdentifier ?? "Bilinmeyen",
+                name: app.localizedName ?? app.bundleIdentifier ?? L.s("Bilinmeyen", "Unknown"),
                 icon: app.icon,
                 runningApp: app,
                 isMenuBarApp: app.activationPolicy == .accessory,
@@ -296,7 +296,7 @@ final class RunningAppsModel {
 
     func requestQuitOthers(_ app: AppInfo) {
         let others = filteredApps.filter { $0.id != app.id }
-        requestQuit(others, title: "Diğerlerini Kapat")
+        requestQuit(others, title: L.s("Diğerlerini Kapat", "Quit Others"))
     }
 
     // MARK: - Toplu kapatma onayı (popover içi)
@@ -304,12 +304,13 @@ final class RunningAppsModel {
     /// "Hepsini Kapat" → görünen listeyi onaya sun.
     func requestQuitAll() {
         requestQuit(filteredApps,
-                    title: optionHeld ? "Hepsini Zorla Kapat" : "Hepsini Kapat")
+                    title: optionHeld ? L.s("Hepsini Zorla Kapat", "Force Quit All")
+                                      : L.s("Hepsini Kapat", "Quit All"))
     }
 
     /// Öneri banner'ı → önerilenleri onaya sun.
     func requestQuitSuggested() {
-        requestQuit(suggestions, title: "Önerilenleri Kapat")
+        requestQuit(suggestions, title: L.s("Önerilenleri Kapat", "Quit Suggested"))
     }
 
     private func requestQuit(_ apps: [AppInfo], title: String) {

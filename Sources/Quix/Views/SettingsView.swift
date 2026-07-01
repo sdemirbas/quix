@@ -10,8 +10,8 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Genel") {
-                Toggle("Oturum açılışında başlat", isOn: $launchAtLogin)
+            Section(L.s("Genel", "General")) {
+                Toggle(L.s("Oturum açılışında başlat", "Launch at login"), isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         let ok = LoginItem.set(newValue)
                         if !ok {
@@ -20,36 +20,38 @@ struct SettingsView: View {
                         }
                     }
                 if loginFailed {
-                    Text("Bu ayar yalnızca imzalı/Uygulamalar klasöründeki sürümde çalışır.")
+                    Text(L.s("Bu ayar yalnızca imzalı/Uygulamalar klasöründeki sürümde çalışır.",
+                             "This only works in a signed build inside the Applications folder."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
 
-            Section("Hızlandırma Önerileri") {
+            Section(L.s("Hızlandırma Önerileri", "Speedup Suggestions")) {
                 VStack(alignment: .leading, spacing: 2) {
-                    LabeledContent("RAM eşiği", value: "\(Int(model.suggestMemoryMB)) MB")
+                    LabeledContent(L.s("RAM eşiği", "RAM threshold"), value: "\(Int(model.suggestMemoryMB)) MB")
                     Slider(value: $model.suggestMemoryMB, in: 200...4000, step: 50)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    LabeledContent("CPU eşiği", value: "%\(Int(model.suggestCPU))")
+                    LabeledContent(L.s("CPU eşiği", "CPU threshold"), value: "\(Int(model.suggestCPU))%")
                     Slider(value: $model.suggestCPU, in: 5...90, step: 5)
                 }
-                Text("Bu eşikleri aşan uygulamalar \"sistemi yoruyor\" olarak önerilir. Az önce kullandığın uygulama öneri dışıdır.")
+                Text(L.s("Bu eşikleri aşan uygulamalar önerilir. Az önce kullandığın uygulama öneri dışıdır.",
+                         "Apps exceeding these thresholds are suggested. The app you just used is excluded."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            Section("Güncellemeler") {
-                Button("Güncellemeleri Denetle…", action: onCheckForUpdates)
+            Section(L.s("Güncellemeler", "Updates")) {
+                Button(L.s("Güncellemeleri Denetle…", "Check for Updates…"), action: onCheckForUpdates)
             }
 
-            Section("Yardım") {
-                Button("Karşılama balonunu tekrar göster", action: onReplayOnboarding)
+            Section(L.s("Yardım", "Help")) {
+                Button(L.s("Karşılama balonunu tekrar göster", "Show welcome tip again"), action: onReplayOnboarding)
             }
 
             Section {
-                LabeledContent("Sürüm", value: "1.0")
+                LabeledContent(L.s("Sürüm", "Version"), value: "1.0")
             }
         }
         .formStyle(.grouped)

@@ -19,16 +19,16 @@ struct AppRowView: View {
                 Text(app.name)
                     .lineLimit(1)
                 if isActive {
-                    Text("aktif")
+                    Text(L.s("aktif", "active"))
                         .font(.caption2)
                         .foregroundStyle(.green)
-                        .accessibilityLabel("Aktif uygulama")
+                        .accessibilityLabel(L.s("Aktif uygulama", "Active app"))
                 }
                 if app.isMenuBarApp {
                     Image(systemName: "menubar.arrow.up.rectangle")
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
-                        .help("Menü çubuğu uygulaması")
+                        .help(L.s("Menü çubuğu uygulaması", "Menu bar app"))
                 }
             }
 
@@ -105,19 +105,22 @@ struct AppRowView: View {
                 .foregroundStyle(optionHeld ? Color.white : Color.primary)
         }
         .buttonStyle(.borderless)
-        .help(optionHeld ? "Zorla kapat" : "Kapat")
-        .accessibilityLabel(optionHeld ? "\(app.name) uygulamasını zorla kapat" : "\(app.name) uygulamasını kapat")
+        .help(optionHeld ? L.s("Zorla kapat", "Force quit") : L.s("Kapat", "Quit"))
+        .accessibilityLabel(
+            optionHeld ? L.s("\(app.name) uygulamasını zorla kapat", "Force quit \(app.name)")
+                       : L.s("\(app.name) uygulamasını kapat", "Quit \(app.name)")
+        )
     }
 
     @ViewBuilder
     private var contextMenu: some View {
-        Button("Kapat") { model.quit(app) }
-        Button("Zorla Kapat") { model.forceQuit(app) }
+        Button(L.s("Kapat", "Quit")) { model.quit(app) }
+        Button(L.s("Zorla Kapat", "Force Quit")) { model.forceQuit(app) }
         Divider()
-        Button(app.runningApp.isHidden ? "Göster" : "Gizle") { model.toggleHide(app) }
-        Button("Finder'da Göster") { model.revealInFinder(app) }
+        Button(app.runningApp.isHidden ? L.s("Göster", "Show") : L.s("Gizle", "Hide")) { model.toggleHide(app) }
+        Button(L.s("Finder'da Göster", "Reveal in Finder")) { model.revealInFinder(app) }
         Divider()
-        Button("Diğerlerini Kapat…") { model.requestQuitOthers(app) }
+        Button(L.s("Diğerlerini Kapat…", "Quit Others…")) { model.requestQuitOthers(app) }
     }
 
     @ViewBuilder

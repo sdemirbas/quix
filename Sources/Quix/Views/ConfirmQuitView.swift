@@ -20,7 +20,9 @@ struct ConfirmQuitView: View {
                     Image(systemName: force ? "bolt.trianglebadge.exclamationmark.fill" : "xmark.circle.fill")
                         .font(.system(size: 26))
                         .foregroundStyle(force ? .red : .orange)
-                    Text("\(pending.apps.count) uygulama kapatılacak")
+                    Text(L.isTurkish
+                         ? "\(pending.apps.count) uygulama kapatılacak"
+                         : "\(pending.apps.count) app\(pending.apps.count == 1 ? "" : "s") will quit")
                         .font(.headline)
                 }
 
@@ -45,17 +47,20 @@ struct ConfirmQuitView: View {
                 .frame(maxHeight: 190)
 
                 Text(force
-                     ? "Zorla kapatma kaydedilmemiş değişiklikleri kaybettirir."
-                     : "Kaydedilmemiş değişiklikler için uygulamalar sana soracak; verin korunur.")
+                     ? L.s("Zorla kapatma kaydedilmemiş değişiklikleri kaybettirir.",
+                           "Force quitting will discard unsaved changes.")
+                     : L.s("Kaydedilmemiş değişiklikler için uygulamalar sana soracak; verin korunur.",
+                           "Apps with unsaved changes will ask you; your data is safe."))
                     .font(.caption)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 HStack(spacing: 10) {
-                    Button("Vazgeç", action: onCancel)
+                    Button(L.s("Vazgeç", "Cancel"), action: onCancel)
                         .controlSize(.large)
-                    Button(force ? "Zorla Kapat" : "Kapat", role: .destructive, action: onConfirm)
+                    Button(force ? L.s("Zorla Kapat", "Force Quit") : L.s("Kapat", "Quit"),
+                           role: .destructive, action: onConfirm)
                         .controlSize(.large)
                         .buttonStyle(.borderedProminent)
                         .tint(force ? .red : .accentColor)

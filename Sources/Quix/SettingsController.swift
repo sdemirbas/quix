@@ -24,7 +24,7 @@ final class SettingsController: NSObject, NSWindowDelegate {
             )
         )
         let window = NSWindow(contentViewController: hosting)
-        window.title = "Quix Ayarları"
+        window.title = L.s("Quix Ayarları", "Quix Settings")
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false
         window.delegate = self

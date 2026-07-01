@@ -25,15 +25,16 @@ struct OnboardingView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "rectangle.stack")
                         .foregroundStyle(.tint)
-                    Text("Quix hazır")
+                    Text(L.s("Quix hazır", "Quix is ready"))
                         .font(.headline)
                 }
-                Text("Çalışan uygulamaları görüp kapatmak için yukarıdaki menü çubuğu ikonuna tıkla.")
+                Text(L.s("Çalışan uygulamaları görüp kapatmak için yukarıdaki menü çubuğu ikonuna tıkla.",
+                         "Click the menu bar icon above to see and quit running apps."))
                     .font(.callout)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .foregroundStyle(.secondary)
-                Button("Anladım", action: onDismiss)
+                Button(L.s("Anladım", "Got it"), action: onDismiss)
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
             }
