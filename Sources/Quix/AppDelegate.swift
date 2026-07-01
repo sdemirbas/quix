@@ -32,20 +32,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             rootView: RootView(
                 model: model,
                 onQuitSelf: { NSApp.terminate(nil) },
-                onRequestQuitAll: { [weak self] force, count in
-                    guard let self else { return }
-                    self.confirmQuit(count: count, force: force,
-                                     confirmTitle: force ? "Zorla Kapat" : "Hepsini Kapat") {
-                        self.model.quitAll(force: force)
-                    }
-                },
-                onRequestQuitSuggested: { [weak self] force, count in
-                    guard let self else { return }
-                    self.confirmQuit(count: count, force: force,
-                                     confirmTitle: "Önerilenleri Kapat") {
-                        self.model.quitSuggested(force: force)
-                    }
-                },
                 onOpenSettings: { [weak self] in self?.openSettings() },
                 onCheckForUpdates: { [weak self] in self?.updater.checkForUpdates() }
             )
@@ -78,30 +64,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         )
     }
 
-    // MARK: - Toplu kapatma onayı (veri koruyan)
-
-    private func confirmQuit(count: Int, force: Bool, confirmTitle: String,
-                             perform: @escaping () -> Void) {
-        guard count > 0 else { return }
-        popover.performClose(nil)
-
-        let alert = NSAlert()
-        alert.alertStyle = force ? .critical : .warning
-        alert.messageText = force
-            ? "\(count) uygulama zorla kapatılsın mı?"
-            : "\(count) uygulama kapatılsın mı?"
-        alert.informativeText = force
-            ? "Zorla kapatma kaydedilmemiş değişiklikleri KAYBETTİRİR."
-            : "Kaydedilmemiş değişiklikleri olan uygulamalar sana soracaktır; verin korunur."
-        alert.addButton(withTitle: confirmTitle)
-        alert.addButton(withTitle: "Vazgeç")
-
-        NSApp.activate(ignoringOtherApps: true)
-        if alert.runModal() == .alertFirstButtonReturn {
-            perform()
-        }
-    }
-
     @objc private func togglePopover(_ sender: Any?) {
         if popover.isShown {
             popover.performClose(sender)
@@ -116,8 +78,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
     }
 
-    // Popover kapanınca timer'ı durdur (CPU tasarrufu)
+    // Popover kapanınca timer'ı durdur (CPU tasarrufu) + bekleyen onayı temizle
     func popoverDidClose(_ notification: Notification) {
         model.stopStatsTimer()
+        model.cancelPendingQuit()
     }
 }

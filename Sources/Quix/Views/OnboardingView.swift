@@ -28,15 +28,17 @@ struct OnboardingView: View {
                     Text("Quix hazır")
                         .font(.headline)
                 }
-                Text("Çalışan uygulamaları görüp kapatmak için\nyukarıdaki menü çubuğu ikonuna tıkla.")
+                Text("Çalışan uygulamaları görüp kapatmak için yukarıdaki menü çubuğu ikonuna tıkla.")
                     .font(.callout)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .foregroundStyle(.secondary)
                 Button("Anladım", action: onDismiss)
                     .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+                    .controlSize(.large)
             }
             .padding(14)
+            .frame(maxWidth: .infinity)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -44,7 +46,8 @@ struct OnboardingView: View {
             )
             .shadow(color: .black.opacity(0.18), radius: 12, y: 4)
         }
-        .padding(8)
+        .frame(width: 280)
+        .padding(10)
         .onAppear { animate = true }
     }
 }

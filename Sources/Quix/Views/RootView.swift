@@ -3,25 +3,36 @@ import SwiftUI
 struct RootView: View {
     @Bindable var model: RunningAppsModel
     let onQuitSelf: () -> Void
-    let onRequestQuitAll: (_ force: Bool, _ count: Int) -> Void
-    let onRequestQuitSuggested: (_ force: Bool, _ count: Int) -> Void
     let onOpenSettings: () -> Void
     let onCheckForUpdates: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            searchBar
-            categoryPicker
-            if !model.suggestions.isEmpty {
-                suggestionsBanner
+        ZStack {
+            VStack(spacing: 0) {
+                header
+                searchBar
+                categoryPicker
+                if !model.suggestions.isEmpty {
+                    suggestionsBanner
+                }
+                Divider().opacity(0.5)
+                appList
+                Divider().opacity(0.5)
+                footer
             }
-            Divider().opacity(0.5)
-            appList
-            Divider().opacity(0.5)
-            footer
+
+            if let pending = model.pendingQuit {
+                ConfirmQuitView(
+                    pending: pending,
+                    force: model.optionHeld,
+                    onConfirm: { model.confirmPendingQuit() },
+                    onCancel: { model.cancelPendingQuit() }
+                )
+                .transition(.opacity)
+            }
         }
         .frame(width: 360, height: 460)
+        .animation(.easeOut(duration: 0.15), value: model.pendingQuit?.id)
     }
 
     // MARK: - Header
@@ -125,7 +136,7 @@ struct RootView: View {
             }
             Spacer()
             Button {
-                onRequestQuitSuggested(model.optionHeld, model.suggestions.count)
+                model.requestQuitSuggested()
             } label: {
                 Text(model.optionHeld ? "Zorla" : "Kapat")
             }
@@ -178,7 +189,7 @@ struct RootView: View {
                 .foregroundStyle(.secondary)
             Spacer()
             Button {
-                onRequestQuitAll(model.optionHeld, model.filteredApps.count)
+                model.requestQuitAll()
             } label: {
                 Text(model.optionHeld ? "Hepsini Zorla Kapat" : "Hepsini Kapat")
             }

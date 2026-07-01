@@ -18,6 +18,13 @@ enum AppCategory: String, CaseIterable, Identifiable {
     }
 }
 
+/// Bekleyen toplu kapatma onayı — hangi uygulamaların kapatılacağını taşır.
+struct PendingQuit: Identifiable {
+    let id = UUID()
+    let title: String
+    let apps: [AppInfo]
+}
+
 /// Sıralama ölçütü.
 enum SortOrder: String, CaseIterable, Identifiable {
     case name
@@ -72,6 +79,9 @@ final class RunningAppsModel {
     var optionHeld: Bool = false
     var category: AppCategory = .all
     var sortOrder: SortOrder = .memory
+
+    /// Popover içi toplu kapatma onayı (dış pencere yok).
+    var pendingQuit: PendingQuit?
 
     // Hızlandırma önerisi eşikleri (Ayarlar'dan seçilir, kalıcı)
     var suggestMemoryMB: Double {
@@ -232,13 +242,33 @@ final class RunningAppsModel {
         removeOptimistically([app.id])
     }
 
-    func quitAll(force: Bool) {
-        quit(filteredApps, force: force)
+    // MARK: - Toplu kapatma onayı (popover içi)
+
+    /// "Hepsini Kapat" → görünen listeyi onaya sun.
+    func requestQuitAll() {
+        requestQuit(filteredApps,
+                    title: optionHeld ? "Hepsini Zorla Kapat" : "Hepsini Kapat")
     }
 
-    /// Hızlandırma önerilerini kapat.
-    func quitSuggested(force: Bool) {
-        quit(suggestions, force: force)
+    /// Öneri banner'ı → önerilenleri onaya sun.
+    func requestQuitSuggested() {
+        requestQuit(suggestions, title: "Önerilenleri Kapat")
+    }
+
+    private func requestQuit(_ apps: [AppInfo], title: String) {
+        guard !apps.isEmpty else { return }
+        pendingQuit = PendingQuit(title: title, apps: apps)
+    }
+
+    func confirmPendingQuit() {
+        if let pending = pendingQuit {
+            quit(pending.apps, force: optionHeld)
+        }
+        pendingQuit = nil
+    }
+
+    func cancelPendingQuit() {
+        pendingQuit = nil
     }
 
     private func quit(_ targets: [AppInfo], force: Bool) {
