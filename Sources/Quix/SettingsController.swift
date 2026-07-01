@@ -7,7 +7,8 @@ import SwiftUI
 final class SettingsController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
 
-    func show(onReplayOnboarding: @escaping () -> Void,
+    func show(model: RunningAppsModel,
+              onReplayOnboarding: @escaping () -> Void,
               onCheckForUpdates: @escaping () -> Void) {
         if let window {
             NSApp.activate(ignoringOtherApps: true)
@@ -17,6 +18,7 @@ final class SettingsController: NSObject, NSWindowDelegate {
 
         let hosting = NSHostingController(
             rootView: SettingsView(
+                model: model,
                 onReplayOnboarding: onReplayOnboarding,
                 onCheckForUpdates: onCheckForUpdates
             )

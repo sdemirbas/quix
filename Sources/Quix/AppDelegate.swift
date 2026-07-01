@@ -72,6 +72,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func openSettings() {
         popover.performClose(nil)
         settings.show(
+            model: model,
             onReplayOnboarding: { [weak self] in self?.showOnboarding() },
             onCheckForUpdates: { [weak self] in self?.updater.checkForUpdates() }
         )

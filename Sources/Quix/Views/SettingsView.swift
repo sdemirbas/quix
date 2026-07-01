@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Bindable var model: RunningAppsModel
     let onReplayOnboarding: () -> Void
     let onCheckForUpdates: () -> Void
 
@@ -25,6 +26,20 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Hızlandırma Önerileri") {
+                VStack(alignment: .leading, spacing: 2) {
+                    LabeledContent("RAM eşiği", value: "\(Int(model.suggestMemoryMB)) MB")
+                    Slider(value: $model.suggestMemoryMB, in: 200...4000, step: 50)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    LabeledContent("CPU eşiği", value: "%\(Int(model.suggestCPU))")
+                    Slider(value: $model.suggestCPU, in: 5...90, step: 5)
+                }
+                Text("Bu eşikleri aşan uygulamalar \"sistemi yoruyor\" olarak önerilir. Az önce kullandığın uygulama öneri dışıdır.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("Güncellemeler") {
                 Button("Güncellemeleri Denetle…", action: onCheckForUpdates)
             }
@@ -38,6 +53,6 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 380, height: 260)
+        .frame(width: 400, height: 420)
     }
 }

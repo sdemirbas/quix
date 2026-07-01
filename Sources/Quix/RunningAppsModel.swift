@@ -62,15 +62,6 @@ struct AppInfo: Identifiable {
     var isHighUsage: Bool {
         cpu >= 25.0
     }
-
-    // Hızlandırma önerisi eşikleri
-    static let heavyMemoryKB = 800_000   // ~780 MB
-    static let heavyCPU = 20.0
-
-    /// Yüksek kaynak tüketen (kapatınca sistemi rahatlatabilecek) aday.
-    var isHeavyConsumer: Bool {
-        rssKB >= AppInfo.heavyMemoryKB || cpu >= AppInfo.heavyCPU
-    }
 }
 
 @MainActor
@@ -82,6 +73,14 @@ final class RunningAppsModel {
     var category: AppCategory = .all
     var sortOrder: SortOrder = .memory
 
+    // Hızlandırma önerisi eşikleri (Ayarlar'dan seçilir, kalıcı)
+    var suggestMemoryMB: Double {
+        didSet { UserDefaults.standard.set(suggestMemoryMB, forKey: "suggestMemoryMB") }
+    }
+    var suggestCPU: Double {
+        didSet { UserDefaults.standard.set(suggestCPU, forKey: "suggestCPU") }
+    }
+
     /// Kullanıcının Quix'i açmadan hemen önce kullandığı uygulama — öneri dışı bırakılır.
     private(set) var lastActiveOtherPID: pid_t?
 
@@ -91,6 +90,9 @@ final class RunningAppsModel {
     private var launchObservers: [NSObjectProtocol] = []
 
     init() {
+        let d = UserDefaults.standard
+        suggestMemoryMB = d.object(forKey: "suggestMemoryMB") as? Double ?? 780
+        suggestCPU = d.object(forKey: "suggestCPU") as? Double ?? 20
         observeWorkspace()
         observeOptionKey()
         refresh()
@@ -125,14 +127,19 @@ final class RunningAppsModel {
 
     // MARK: - Hızlandırma önerileri
 
+    /// Eşiği aşan (kapatınca sistemi rahatlatabilecek) aday mı?
+    func isHeavy(_ app: AppInfo) -> Bool {
+        Double(app.rssKB) >= suggestMemoryMB * 1024 || app.cpu >= suggestCPU
+    }
+
     /// Çok kaynak tüketen ve az önce kullanılmayan uygulamalar (RAM'e göre azalan).
     var suggestions: [AppInfo] {
-        apps.filter { $0.isHeavyConsumer && $0.id != lastActiveOtherPID }
+        apps.filter { isHeavy($0) && $0.id != lastActiveOtherPID }
             .sorted { $0.rssKB > $1.rssKB }
     }
 
     func isSuggested(_ app: AppInfo) -> Bool {
-        app.isHeavyConsumer && app.id != lastActiveOtherPID
+        isHeavy(app) && app.id != lastActiveOtherPID
     }
 
     /// Önerilenleri kapatınca boşalacak tahmini RAM.
