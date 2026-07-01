@@ -30,6 +30,11 @@ rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources" "$APP_DIR/Contents/Frameworks"
 cp "$BUILD_BIN" "$APP_DIR/Contents/MacOS/$APP_NAME"
 
+# App icon
+if [[ -f "$ROOT/Resources/AppIcon.icns" ]]; then
+    cp "$ROOT/Resources/AppIcon.icns" "$APP_DIR/Contents/Resources/AppIcon.icns"
+fi
+
 # Sparkle framework'ünü göm (symlink yapısını koruyarak)
 echo "==> Sparkle gömülüyor"
 ditto "$SPARKLE_FW" "$APP_DIR/Contents/Frameworks/Sparkle.framework"
@@ -48,6 +53,7 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
     <key>CFBundleDisplayName</key><string>$APP_NAME</string>
     <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
     <key>CFBundleExecutable</key><string>$APP_NAME</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleVersion</key><string>$BUILD</string>
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
